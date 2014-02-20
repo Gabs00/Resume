@@ -1,4 +1,4 @@
-Example usage of program
+Example usage of RSS classes
 
 ```perl
 
