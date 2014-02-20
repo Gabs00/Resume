@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 
-
-#	Code by: Gabs00
-
-	
+=About
+	Code by: Gabs00
+	Credits:
+	http://docstore.mik.ua/orelly/perl3/tk/index.htm
+	http://search.cpan.org/~srezic/Tk-804.032/Tk.pod
+	http://www.perlmonks.org/?node_id=181977
+=cut	
 
 use strict;
 use warnings;
