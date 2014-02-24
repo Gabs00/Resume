@@ -3,6 +3,8 @@ CL Lead Generator Demo
 
 This application is a demo of a lead generating application. Currently, name and email of poster is not implimented.
 
+###[SAMPLE] (https://github.com/Gabs00/Resume/blob/master/Leads/sample.csv)
+
 	Created by: Gabar
 	Date: 2/24/2014
 	Notes: 
