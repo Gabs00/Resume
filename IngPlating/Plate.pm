@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 package Plate;
 use Moose;
 
