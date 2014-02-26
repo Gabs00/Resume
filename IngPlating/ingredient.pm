@@ -1,3 +1,7 @@
+#!/usr/bin/perl
+
+#questionable whether this needs its own class, we will see, if it only contains fields and no subroutines.
+
 package Ingredient;
 
 use Moose;
