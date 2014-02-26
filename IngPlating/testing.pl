@@ -47,4 +47,6 @@ sub getItem {
 	else {
 		print $response->status_line;
 	}
+	
+	return 0;
 }
