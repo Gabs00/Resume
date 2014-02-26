@@ -58,4 +58,21 @@ has Link => (
 	required => 1,
 );
 
+#price per unit
+has ppu => (
+	is => 'rw',
+	isa => 'Num',
+	lazy => 1,
+	builder => '_calc_ppu',
+);
+
+sub _calc_ppu {
+	my $self = shift;
+	
+	my $ppu = ($self->price / int($self->size));
+	$ppu = int($ppu*1000);
+	$ppu/=1000;
+	
+	return $ppu;
+}
 1;
