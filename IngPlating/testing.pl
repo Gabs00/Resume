@@ -16,10 +16,10 @@ my $key = "yas6vg4wwgqdaky4ht2pkrh4";
 my $query = "salt";
 
 my $recipe = Recipe->new(recipeName => "Cookies", servings => 4, ingredients => {
-															'flour' => [2, 'cups'],
-															'salt' => [2, 'Tbsp'],
-															'milk' => [.5, 'cups'],
-													});
+								'flour' => [2, 'cups'],
+								'salt' => [2, 'Tbsp'],
+								'milk' => [.5, 'cups'],
+								});
 
 
 $recipe->price(20);
