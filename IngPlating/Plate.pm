@@ -70,7 +70,7 @@ sub _make_short {
 			open (my $fh, '<', $saveFile) or die "Could not open save file: $!";
 			
 			while(my $line = <$fh>){
-				if($line =~ /\<opt\>/){						#Keys names in the save files start with <opt>
+				if($line =~ /\<opt\>/){					#Keys names in the save files start with <opt>
 					push @{ $list{$saveFile} }, $line;
 				}
 			}
@@ -95,7 +95,7 @@ sub save {
 	my $self = shift;
 	my $mode = shift || 0;
 	my @toSave;
-	my @key = qw/itemId recipeName itemId/;												#used to format the XML output.
+	my @key = qw/itemId recipeName itemId/;							#used to format the XML output.
 	if($mode == 1 || !$mode){
 		push @toSave, [ $self->saveFiles->[0], $self->ingredientList, $key[0]];
 	}
@@ -109,7 +109,7 @@ sub save {
 	}
 	
 	while(my $save = shift(@toSave)){
-		my $xml = $self->_prep_save($save->[1], $save->[2]); 							#_prep_save method converts the files to XML format,
+		my $xml = $self->_prep_save($save->[1], $save->[2]); 				#_prep_save method converts the files to XML format,
 		open (my $fh, '>', $save->[0]) or die "failed to open " . $save->[0] . ": $!";  # second the key attribute
 		print { $fh } '<xml>', "\n";
 		print { $fh } $_ for(@{ $xml });
@@ -125,8 +125,8 @@ sub load_files {
 	for my $fileName (@{ $self->saveFiles}){
 		my $keyAttr = shift(@key);
 		if(-e $fileName){
-			my $toLoad = {$fileName => $xml->XMLin(join( '', read_file($fileName)), keyAttr => $keyAttr, forceArray => 0) };
-			print Dumper $toLoad;
+			my $toLoad = {$fileName => $xml->XMLin(join( '', read_file($fileName)), 
+					keyAttr => $keyAttr, forceArray => 0) };
 			$self->set_loaded($toLoad);													
 		}
 	}
