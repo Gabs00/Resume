@@ -59,6 +59,31 @@ has myXML => (
 	lazy => 1,
 );
 
+sub add_recipe {
+	my ($self, $recipe) = @_;
+	$self->recipeList->{$recipe->{'recipeName'}} = $recipe;
+}
+
+sub add_mult_recipe {
+	my ($self, @recipes) = @_;
+	
+	for my $recipe(@recipes){
+		$self->add_recipe($recipe);
+	}
+}
+
+sub add_ingredient {
+	my ($self, $ingredient) = @_;
+	$self->ingredientList->{$ingredient->{'itemId'}} = $ingredient;
+}
+
+sub add_mult_ingredient {
+	my ($self, @ingredients) = @_;
+	for my $ingredient (@ingredients){
+		$self->add_ingredients($ingredient);
+	}
+}
+
 #Makes the shortened list of item names / ids
 sub _make_short {
 	my $self = shift;
@@ -70,11 +95,23 @@ sub _make_short {
 			open (my $fh, '<', $saveFile) or die "Could not open save file: $!";
 			
 			while(my $line = <$fh>){
-				if($line =~ /\<opt\>/){					#Keys names in the save files start with <opt>
+				
+				#Keys names in the save files start with <opt>
+				if($line =~ /\<opt\>/){						
 					push @{ $list{$saveFile} }, $line;
 				}
 			}
 			close $fh;
+		}
+		
+		#checking if any extras were currently loaded in memory
+		my %liveList = ($saveFile =~/(ingred)/ ) ? %{ $self->ingredientList } : %{ $self->recipeList };
+		
+		for my $key (keys %liveList){
+			my $isPresent = grep { $key =~ /$_/ } @{ $list{$saveFile} };
+			if(!$isPresent){
+				push @{ $list{$saveFile} }, $key;
+			}
 		}
 	}
 	
@@ -95,7 +132,9 @@ sub save {
 	my $self = shift;
 	my $mode = shift || 0;
 	my @toSave;
-	my @key = qw/itemId recipeName itemId/;							#used to format the XML output.
+	
+	#used to format the XML output.
+	my @key = qw/itemId recipeName itemId/;												
 	if($mode == 1 || !$mode){
 		push @toSave, [ $self->saveFiles->[0], $self->ingredientList, $key[0]];
 	}
@@ -109,8 +148,11 @@ sub save {
 	}
 	
 	while(my $save = shift(@toSave)){
-		my $xml = $self->_prep_save($save->[1], $save->[2]); 				#_prep_save method converts the files to XML format,
-		open (my $fh, '>', $save->[0]) or die "failed to open " . $save->[0] . ": $!";  # second the key attribute
+	
+		#_prep_save method converts the files to XML format,
+		# second the key attribute
+		my $xml = $self->_prep_save($save->[1], $save->[2]); 							
+		open (my $fh, '>', $save->[0]) or die "failed to open " . $save->[0] . ": $!";  
 		print { $fh } '<xml>', "\n";
 		print { $fh } $_ for(@{ $xml });
 		print { $fh } '</xml>';
@@ -125,8 +167,8 @@ sub load_files {
 	for my $fileName (@{ $self->saveFiles}){
 		my $keyAttr = shift(@key);
 		if(-e $fileName){
-			my $toLoad = {$fileName => $xml->XMLin(join( '', read_file($fileName)), 
-					keyAttr => $keyAttr, forceArray => 0) };
+			my $toLoad = {$fileName => $xml->XMLin(join( '', read_file($fileName)), keyAttr => $keyAttr, forceArray => 0) };
+			print Dumper $toLoad;
 			$self->set_loaded($toLoad);													
 		}
 	}
