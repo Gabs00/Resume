@@ -298,4 +298,11 @@ sub get_size {
 	}
 	return wantarray ? (0,"0") : 0;
 }
+
+sub convert_unit {
+	my $self = shift;
+	my %units = (
+			#A very long list of units
+	);
+}
 1;
