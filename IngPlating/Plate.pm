@@ -2,6 +2,7 @@
 
 package Plate;
 use Moose;
+use namespace::autoclean;
 
 use Ingredient;
 use Recipe;
