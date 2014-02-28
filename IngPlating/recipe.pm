@@ -3,7 +3,7 @@
 package Recipe;
 
 use Moose;
-
+use namespace::autoclean;
 
 #todo, how does this class get the ingredient class? add a hashRef of them? need to think of a way for these 
 #two to communicate, the 'interface' may pass the ingredients over.
@@ -67,7 +67,7 @@ has pricePerServing => (
 
 sub get_pps {
 	my $self = shift;
-	if($self->price > 0){
+	if($self->price > 0 && $self->servings > 0){
 		my $pps = ($self->price/$self->servings);
 		return $pps;
 	}
