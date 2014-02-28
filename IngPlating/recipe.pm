@@ -49,7 +49,7 @@ has servings => (
 	required => 1,
 );
 
-#price will be set by ingrediant
+#price will be set from ingredient price, from Plate class
 has price => (
 	is => 'rw',
 	isa => 'Num',
