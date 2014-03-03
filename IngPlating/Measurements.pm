@@ -19,7 +19,6 @@ has abbreviations => (
 );
 sub _find_unit {
 	my ($self, $abbr) = @_;
-	
 	for my $key(keys %{ $self->abbreviations }){
 			my $found = grep{ $_ =~ /$abbr/ } @{ $self->abbreviations->{$key} };
 			return $key if $found;
@@ -100,3 +99,4 @@ sub _grams_to_ounces{
 }
 
 1;
+
