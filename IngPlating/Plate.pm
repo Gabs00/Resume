@@ -9,7 +9,7 @@ use Recipe;
 use XML::Simple qw(:strict);
 use LWP::UserAgent;
 use File::Slurp;
-use Data::Dumper;
+
 
 #if you fork this Repo, or use my code, please do not use my API key.
 #Walmart is giving them away.
@@ -17,6 +17,7 @@ use Data::Dumper;
 
 #TO DO: allow indexing of save files so we don't have to slurp the whole file into memory
 #This is partly in place with the short list
+#TODO finish sub get_recipe_price
 
 has key => (
 	is => 'ro',
@@ -44,6 +45,7 @@ has short => (
 	isa => 'HashRef',
 	builder => '_make_short',
 	lazy => 1,
+	predicate => 'has_short',
 );
 
 has saveFiles => (
@@ -60,59 +62,99 @@ has myXML => (
 	lazy => 1,
 );
 
-sub add_recipe {
-	my ($self, $recipe) = @_;
-	$self->recipeList->{$recipe->{'recipeName'}} = $recipe;
-}
 
-sub add_mult_recipe {
+sub add_recipe {
 	my ($self, @recipes) = @_;
 	
 	for my $recipe(@recipes){
-		$self->add_recipe($recipe);
+		$self->recipeList->{$recipe->{'recipeName'}} = $recipe;
 	}
 }
 
 sub add_ingredient {
-	my ($self, $ingredient) = @_;
-	$self->ingredientList->{$ingredient->{'itemId'}} = $ingredient;
+	my ($self, @ingredients) = @_;
+	
+	for my $ingredient (@ingredients){
+			$self->ingredientList->{$ingredient->{'itemId'}} = $ingredient;
+	}
 }
 
+sub get_recipe_price {
+	my ($self, $recipe) = @_;
+	my $sum;
+	
+	for my $ingredient (keys %{ $recipe->ingredients }){
+		my @portion = @{ $recipe->ingredients->{$ingredient} };
+		my $id = $self->short->{'ingredients.xml'}{$ingredient};
+		#my $ing =$self->ingredientList->{};
+		
+	}
+}
 sub add_mult_ingredient {
 	my ($self, @ingredients) = @_;
-	for my $ingredient (@ingredients){
-		$self->add_ingredients($ingredient);
-	}
+
+}
+
+sub update {
+	my $self = shift;
+	$self->short;
+	$self->save();
+	$self->short($self->_make_short());
 }
 
 #Makes the shortened list of item names / ids
 sub _make_short {
 	my $self = shift;
+	my %oldShort;
 	my @saveFiles = @{ $self->saveFiles };
 	pop @saveFiles;
+	
+	if($self->has_short){
+		%oldShort = %{ $self->short };
+	}
+	
 	my %list;
 	for my $saveFile (@saveFiles){
 		if(-e $saveFile){
 			open (my $fh, '<', $saveFile) or die "Could not open save file: $!";
 			
 			while(my $line = <$fh>){
-				
+				chomp($line);
 				#Keys names in the save files start with <opt>
-				if($line =~ /\<opt\>/){						
-					push @{ $list{$saveFile} }, $line;
+				if($line =~ /\<opt\s\w/ && $saveFile =~ /ing/){
+						my @wanted = $line =~ /itemId=\"(\d+)\".+?name=\"(.+?)\"/;
+						$list{$saveFile}->{$wanted[0]} =$wanted[1];
+						print "check!\n";
+				}
+				elsif($line =~ /\<opt\>/ && $saveFile =~ /reci/){
+						$line =~ s'\<opt\>'';
+						$line =~ s'\<\/opt\>'';
+						push @{ $list{$saveFile} }, $line;
 				}
 			}
 			close $fh;
 		}
 		
 		#checking if any extras were currently loaded in memory
-		my %liveList = ($saveFile =~/(ingred)/ ) ? %{ $self->ingredientList } : %{ $self->recipeList };
+		my $check = ($saveFile =~/(ingred)/ ) ? 1:0;
+		my %liveList =  ($check) ? %{ $self->ingredientList } : %{ $self->recipeList };
 		
 		for my $key (keys %liveList){
-			my $isPresent = grep { $key =~ /$_/ } @{ $list{$saveFile} };
-			if(!$isPresent){
-				push @{ $list{$saveFile} }, $key;
+			if($check){
+				my @isPresent = grep($_ =~ /$key/, keys %{ $list{$saveFile} });
+				if(!@isPresent){
+					$list{$saveFile}->{$key} = $liveList{$key}->{'name'};
+					print "fail\n";
+				}
 			}
+			else{
+				my @isPresent = grep($_ =~ /$key/, @{ $list{$saveFile} });
+				if(!@isPresent){
+					push @{ $list{$saveFile} }, $key;
+					print "fail\n";
+				}
+			}
+			
 		}
 	}
 	
@@ -169,7 +211,6 @@ sub load_files {
 		my $keyAttr = shift(@key);
 		if(-e $fileName){
 			my $toLoad = {$fileName => $xml->XMLin(join( '', read_file($fileName)), keyAttr => $keyAttr, forceArray => 0) };
-			print Dumper $toLoad;
 			$self->set_loaded($toLoad);													
 		}
 	}
@@ -204,7 +245,6 @@ sub _build_recipe_list {
 	else {
 		return 0;
 	}
-	print Dumper @recipes;
 	while(my $key = shift(@recipes)){
 		my %values = %{ shift(@recipes) };
 		my $recipe = Recipe->new (
@@ -298,12 +338,5 @@ sub get_size {
 		return wantarray ? @toReturn: $toReturn[0]; 
 	}
 	return wantarray ? (0,"0") : 0;
-}
-
-sub convert_unit {
-	my $self = shift;
-	my %units = (
-			#A very long list of units
-	);
 }
 1;
