@@ -2,12 +2,49 @@
 
 package Measurements;
 use Moose;
+use namespace::autoclean;
 
 has conversions => (
 	is => 'ro',
 	isa => 'HashRef',
 	builder => '_build_conversions',
+	lazy => 1,
 );
+
+has abbreviations => (
+	is => 'ro',
+	isa => 'HashRef',
+	builder => '_build_abbr',
+	lazy => 1,
+);
+sub _find_unit {
+	my ($self, $abbr) = @_;
+	
+	for my $key(keys %{ $self->abbreviations }){
+			my $found = grep{ $_ =~ /$abbr/ } @{ $self->abbreviations->{$key} };
+			return $key if $found;
+	}
+	return 'ounces';
+};
+
+sub _build_abbr {
+	my $self = shift;
+	return {
+				"drop" => ['drop', 'drops'], 
+				"teaspoon" => ['t', 'tsp', 'teaspoon', 'teaspoons'], 
+				"tablespoon" => ['T', 'tb', 'tbs', 'tbsp', 'tblsp', 'tblspn', 'tablespoon', 'tablespoons'], 
+				"fluid ounce" => ['fl oz', 'fl. oz', 'fluid ounce', 'fluid ounces'], 
+				"jigger" => ['jigger', 'jiggers'], 
+				"gill" => ['gill', 'gills'],
+				"cup" => ['c', 'cup', 'cups'], 
+				"pint" => ['p', 'pt', 'fl pt', 'fl. pt', 'pint', 'pints'], 
+				"fifth" => ['fifth', '5th', 'fifths'], 
+				"quart" => ['q', 'qt', 'fl qt', 'fl. qt', 'quart', 'quarts'], 
+				"gallon" => ['g', 'gal', 'gallon', 'gallons'], 
+				"pounds" => ['lb', 'lbs', '#', 'pounds', 'pound'], 
+				"ounces" => ['oz', 'ounces', 'ounce'],
+				};
+}
 sub _build_conversions{
 	 my $self = shift;
 	 my %measures;
@@ -22,6 +59,7 @@ sub _build_conversions{
 
 sub to_grams {
 	my ($self, $amount, $measure, $type) = @_;
+	$measure = $self->_find_unit($measure);
 	my $ounces = $self->_to_ounces($amount, $measure);
 	my $grams = $self->_ounces_to_grams($ounces, $type);
 	return $grams;
